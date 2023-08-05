@@ -1,5 +1,24 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
+import yfinance as yf
+import datetime
+
+def fetch_stock_data(symbol, start_date, end_date):
+    data = yf.download(symbol, start=start_date, end=end_date)
+    return data.reset_index()
+
+def update_data(df, recent_data_df):
+    # Get the most recent date in the existing dataset
+    last_date_in_df = pd.to_datetime(df['Date']).max()
+
+    # Filter the recent_data_df to include only data from the last date in the existing dataset
+    recent_data_df = recent_data_df[recent_data_df['Date'] > last_date_in_df]
+
+    # Concatenate the existing dataset with the recent data
+    updated_df = pd.concat([df, recent_data_df], ignore_index=True)
+
+    return updated_df
+
 
 def load_data(file_path):
     return pd.read_csv(file_path)
@@ -54,6 +73,15 @@ if __name__ == "__main__":
 
     # Load data
     apple_df = load_data(input_file)
+
+    # Fetch recent data
+    # Calculate start_date and end_date based on existing data and current date
+    start_date = (pd.to_datetime(apple_df['Date']).max() + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
+    end_date = datetime.now().strftime('%Y-%m-%d')
+    recent_data_df = fetch_stock_data('AAPL', start_date, end_date)
+
+    # Update the existing dataset with the recent data
+    apple_df = update_data(apple_df, recent_data_df)
 
     # Feature engineering
     apple_df = generate_features(apple_df)
