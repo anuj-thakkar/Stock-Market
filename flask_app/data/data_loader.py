@@ -17,6 +17,10 @@ def update_data(df, recent_data_df):
     # Concatenate the existing dataset with the recent data
     updated_df = pd.concat([df, recent_data_df], ignore_index=True)
 
+    # sort the updated_df by date
+    updated_df['Date'] = pd.to_datetime(updated_df['Date'])
+    updated_df = updated_df.sort_values(by='Date').reset_index(drop=True)
+
     return updated_df
 
 
@@ -63,8 +67,8 @@ def save_data(df, output_file):
 
 if __name__ == "__main__":
     # Define file paths
-    input_file = 'data/AAPL.csv'
-    output_file = 'data/clean/AAPL_feature_engineered.csv'
+    input_file = 'flask_app/data/AAPL.csv'
+    output_file = 'flask_app/data/clean/AAPL_feature_engineered.csv'
 
     # Define numerical features to scale
     numerical_features = ['Volume', 'Open', 'High', 'Low', 'Daily_Return',
@@ -77,7 +81,7 @@ if __name__ == "__main__":
     # Fetch recent data
     # Calculate start_date and end_date based on existing data and current date
     start_date = (pd.to_datetime(apple_df['Date']).max() + pd.Timedelta(days=1)).strftime('%Y-%m-%d')
-    end_date = datetime.now().strftime('%Y-%m-%d')
+    end_date = datetime.date.today().strftime('%Y-%m-%d')
     recent_data_df = fetch_stock_data('AAPL', start_date, end_date)
 
     # Update the existing dataset with the recent data
