@@ -57,6 +57,12 @@ def prediction():
     scaler = StandardScaler()
     scaler.fit(stock_data['Close'].values.reshape(-1, 1))
     predicted_price = scaler.inverse_transform(predicted_scaled)[0][0]
+
+    # Inverse transform to get actual Volume, Open, High, Low
+    scaler = StandardScaler()
+    scaler.fit(stock_data[['Volume', 'Open', 'High', 'Low']])
+    
+
     print("predicted price: ", predicted_price)
     print(type(predicted_price))
     print("shape of predicted price: ", predicted_price.shape)
