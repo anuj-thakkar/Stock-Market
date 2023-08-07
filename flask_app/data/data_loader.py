@@ -5,6 +5,9 @@ import datetime
 
 def fetch_stock_data(symbol, start_date, end_date):
     data = yf.download(symbol, start=start_date, end=end_date)
+    # change Date Column to datetime
+    data['Date'] = pd.to_datetime(data['Date'])
+    print(data.columns)
     return data.reset_index()
 
 def update_data(df, recent_data_df):
@@ -19,13 +22,15 @@ def update_data(df, recent_data_df):
 
     # sort the updated_df by date
     updated_df['Date'] = pd.to_datetime(updated_df['Date'])
-    updated_df = updated_df.sort_values(by='Date').reset_index(drop=True)
+    updated_df = updated_df.sort_values(by='Date', ascending=True).reset_index(drop=True)
 
     return updated_df
 
 
 def load_data(file_path):
-    return pd.read_csv(file_path)
+    data = pd.read_csv(file_path)
+    data['Date'] = pd.to_datetime(data['Date'])
+    return data
 
 def generate_features(df):
 
@@ -92,6 +97,10 @@ if __name__ == "__main__":
 
     # Scale numerical features
     apple_df = scale_data(apple_df, numerical_features)
+
+    print('Processed data:')
+    print(apple_df.head())
+    print('Number of rows and columns:', apple_df.shape)
 
     # Save the processed data to a new CSV file
     save_data(apple_df, output_file)
