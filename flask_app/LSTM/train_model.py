@@ -7,9 +7,7 @@ from keras.layers import LSTM, Dense
 
 # Load data
 def load_data(file_path):
-    print('Loading data...')
     df = pd.read_csv(file_path)
-    print(df.head())
     return df
     
 
@@ -56,17 +54,15 @@ if __name__ == "__main__":
     batch_size = 5
 
     apple_df = load_data(data_file_path)
-    
+
     X, y_scaled = preprocess_data(apple_df)
     X_lstm = prepare_lstm_input(X)
-
+    
     X_train, X_test, y_train, y_test = train_test_split(X_lstm, y_scaled, test_size=0.2, shuffle=False)
 
     model = build_lstm_model(input_shape=(X_train.shape[1], X_train.shape[2]))
     history = train_lstm_model(model, X_train, y_train, epochs=epochs, batch_size=batch_size)
 
-    print_model_summary(model)
-    
     # Save the trained model
     model.save('trained_lstm_model.h5')
     print('Model saved to trained_lstm_model.h5')

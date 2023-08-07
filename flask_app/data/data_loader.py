@@ -6,9 +6,9 @@ import datetime
 def fetch_stock_data(symbol, start_date, end_date):
     data = yf.download(symbol, start=start_date, end=end_date)
     # change Date Column to datetime
-    data['Date'] = pd.to_datetime(data['Date'])
-    print(data.columns)
-    return data.reset_index()
+    print(data.info())
+    return data.reset_index().drop(['Adj Close'], axis=1)
+
 
 def update_data(df, recent_data_df):
     # Get the most recent date in the existing dataset
@@ -20,8 +20,10 @@ def update_data(df, recent_data_df):
     # Concatenate the existing dataset with the recent data
     updated_df = pd.concat([df, recent_data_df], ignore_index=True)
 
-    # sort the updated_df by date
+    # make Date column datetime
     updated_df['Date'] = pd.to_datetime(updated_df['Date'])
+
+    # Sort the updated dataset by date
     updated_df = updated_df.sort_values(by='Date', ascending=True).reset_index(drop=True)
 
     return updated_df
@@ -29,7 +31,6 @@ def update_data(df, recent_data_df):
 
 def load_data(file_path):
     data = pd.read_csv(file_path)
-    data['Date'] = pd.to_datetime(data['Date'])
     return data
 
 def generate_features(df):
@@ -72,8 +73,8 @@ def save_data(df, output_file):
 
 if __name__ == "__main__":
     # Define file paths
-    input_file = 'flask_app/data/AAPL.csv'
-    output_file = 'flask_app/data/clean/AAPL_feature_engineered.csv'
+    input_file = '/Users/anujthakkar/Documents/Purdue/Projects/Stock Market/flask_app/data/AAPL.csv'
+    output_file = '/Users/anujthakkar/Documents/Purdue/Projects/Stock Market/flask_app/data/clean/AAPL_feature_engineered.csv'
 
     # Define numerical features to scale
     numerical_features = ['Volume', 'Open', 'High', 'Low', 'Daily_Return',
@@ -95,12 +96,11 @@ if __name__ == "__main__":
     # Feature engineering
     apple_df = generate_features(apple_df)
 
+    print(apple_df.info())
+    print(apple_df.tail())
+
     # Scale numerical features
     apple_df = scale_data(apple_df, numerical_features)
-
-    print('Processed data:')
-    print(apple_df.head())
-    print('Number of rows and columns:', apple_df.shape)
 
     # Save the processed data to a new CSV file
     save_data(apple_df, output_file)
