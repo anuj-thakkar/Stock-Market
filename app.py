@@ -24,25 +24,27 @@ def index():
 
 @app.route('/prediction')
 def prediction():
+    from sklearn.preprocessing import MinMaxScaler
+    import joblib, os
+
+    # Load the scaler object used for scaling
+    scaler_directory = '/Users/anujthakkar/Documents/Purdue/Projects/Stock Market/flask_app/data/scalers'  # Provide the appropriate directory path
+    scaler_filename = 'features_scaler.save'
+    scaler_path = os.path.join(scaler_directory, scaler_filename)
+    mm_scaler = joblib.load(scaler_path)
+
+    # Define the numerical features to unscale
+    numerical_features = ['Volume', 'Open', 'High', 'Low', 'Daily_Return',
+                          '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
+                          'Volatility', 'EMA_Close_5', 'EMA_Close_20']
+
     # Get the latest data (today's data) from the processed data
     latest_data = stock_data.iloc[-1]
     print(latest_data)
 
-    # Extract required fields for display on the prediction page
-    date = latest_data['Date']
-    close = latest_data['Close']
-    volume = latest_data['Volume']
-    open_price = latest_data['Open']
-    high = latest_data['High']
-    low = latest_data['Low']
-
-    # Get the latest data (today's data) from the processed data
-    latest_data = stock_data.iloc[-1]
-
     # Extract the features needed for prediction
     features = latest_data.drop(['Close', 'Date', 'Quarter']).values
-    print(features)
-    
+
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
 
@@ -52,30 +54,57 @@ def prediction():
 
     # Predict the price for tomorrow
     predicted_scaled = loaded_model.predict(X_lstm)
+    print("predicted scaled: ", predicted_scaled)
     
     # Inverse transform to get the actual predicted price
     scaler = StandardScaler()
     scaler.fit(stock_data['Close'].values.reshape(-1, 1))
-    predicted_price = scaler.inverse_transform(predicted_scaled)[0][0]
-
-    # Inverse transform to get actual Volume, Open, High, Low
-    scaler = StandardScaler()
-    scaler.fit(stock_data[['Volume', 'Open', 'High', 'Low']])
-    
+    inverse = scaler.inverse_transform(predicted_scaled)
+    predicted_price = inverse[0][0]
 
     print("predicted price: ", predicted_price)
     print(type(predicted_price))
     print("shape of predicted price: ", predicted_price.shape)
 
+
+    # now, we can do the same for the other features
+    # Define the numerical features to unscale
+    numerical_features = ['Volume', 'Open', 'High', 'Low', 'Daily_Return',
+                          '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
+                          'Volatility', 'EMA_Close_5', 'EMA_Close_20']
+    
+    # Get the latest data (today's data) from the processed data
+    latest_data = stock_data.iloc[-1].copy()
+
+    # Convert the latest data to a DataFrame
+    latest_data_df = pd.DataFrame([latest_data])
+
+    # Unscale the relevant features
+    unscaled_data = unscale_data(latest_data_df.copy(), mm_scaler, numerical_features)
+    unscaled_latest_data = unscaled_data.iloc[0]
+
+    print("Unscaled Latest Data:")
+    print(unscaled_latest_data)
+
     return render_template('prediction.html',
-                            date=date,
-                            close=close,
-                            volume=volume,
-                            open=open_price,
-                            high=high,
-                            low=low,
-                            predicted_price=predicted_price,
+                            date=latest_data['Date'],
+                            close=round(latest_data['Close'], 2),
+                            # round Volume to whole number
+                            volume = round(unscaled_latest_data['Volume']), 
+                            open=round(unscaled_latest_data['Open'], 2),
+                            high=round(unscaled_latest_data['High'], 2),
+                            low=round(unscaled_latest_data['Low'], 2),
+                            predicted_price=round(predicted_price, 2)
                           )
+
+def unscale_data(data_df, scaler, numerical_features):
+    """
+    Unscale the numerical features of the data_df using the scaler object
+    """
+    # Unscale the numerical features
+    data_df[numerical_features] = scaler.inverse_transform(data_df[numerical_features])
+
+    return data_df
                          
 if __name__ == '__main__':
     app.run(debug=True)

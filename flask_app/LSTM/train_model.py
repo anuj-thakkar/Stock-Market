@@ -28,8 +28,8 @@ def preprocess_data(df):
 
 def prepare_lstm_input(X):
     time_steps = 1
-
-    X_lstm = X.reshape(X.shape[0], time_steps, X.shape[1])
+    batch_size = X.shape[0]  # Get the number of samples in the batch
+    X_lstm = X.reshape(batch_size, time_steps, X.shape[1])
     X_lstm = X_lstm.astype('float32')
 
     return X_lstm

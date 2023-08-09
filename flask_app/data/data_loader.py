@@ -61,10 +61,17 @@ def generate_features(df):
 
     return df
 
-def scale_data(df, features_to_scale):
+def scale_data(df, features_to_scale, scaler_directory='/Users/anujthakkar/Documents/Purdue/Projects/Stock Market/flask_app/data/scalers'):
+    import joblib
+    import os
+
     """Scale numerical features using MinMaxScaler."""
     scaler = MinMaxScaler()
     df[features_to_scale] = scaler.fit_transform(df[features_to_scale])
+
+    scaler_filename = 'features_scaler.save'
+    scaler_path = os.path.join(scaler_directory, scaler_filename)
+    joblib.dump(scaler, scaler_path)
     return df
 
 def save_data(df, output_file):
@@ -102,5 +109,6 @@ if __name__ == "__main__":
     # Scale numerical features
     apple_df = scale_data(apple_df, numerical_features)
 
-    # Save the processed data to a new CSV file
+    # Save the processed and feature engineered data to a new CSV file
     save_data(apple_df, output_file)
+
