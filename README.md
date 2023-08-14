@@ -11,8 +11,6 @@ This project is a simple web application that predicts the next day's closing st
 - [Data](#data)
 - [Model](#model)
 - [Endpoints](#endpoints)
-- [Contributing](#contributing)
-- [License](#license)
 
 ## Getting Started
 
@@ -45,3 +43,12 @@ data along with the predicted closing price for the next day.
 The app fetches stock price data using the Yahoo Finance API. 
 The data_loader.py script handles data fetching, updating, preprocessing, and feature engineering. 
 The processed data is saved in the data/clean directory.
+
+## Model
+The LSTM model used for prediction is trained using historical stock price data.
+The training process is performed in the train_model.py script, and the trained model is saved as trained_lstm_model.h5.
+
+## Endpoints
+`/`: Displays the home page with project description.
+
+`/prediction`: Displays the latest stock price data and the predicted closing price for the next day.
