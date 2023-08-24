@@ -3,32 +3,18 @@
 <head>
     <title>Stock Price Prediction</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        /* Your existing CSS styles */
+
+        /* Add a new style to control the plot's appearance */
+        .plot-container {
+            width: 700px;
+            height: 500px;
+            margin: 20px auto;
         }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        p {
-            color: #666;
-            text-align: left;
-            margin: 10px 20px;
-        }
+
         .predicted-header {
             font-size: 24px;
-            color: #007bff;
-            text-align: center;
-            margin-top: 20px;
+            color: #007BFF;
         }
     </style>
 </head>
@@ -42,5 +28,11 @@
     <p><strong>Low Price:</strong> {{ low }}</p>
     <p class="predicted-header">Predicted Close Price:</p>
     <h2 class="predicted-header">{{ predicted_price }}</h2>
+
+    <!-- Embed the Plotly figure as an HTML div -->
+    <div class="plot-container">
+        {{ fig | safe }}
+    </div>
+
 </body>
 </html>

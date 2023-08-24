@@ -3,6 +3,8 @@ import pandas as pd
 from keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 import numpy as np
+import plotly.express as px
+
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -19,6 +21,7 @@ loaded_model = load_model(model_path)
 
 @app.route('/')
 def index():
+    print('Main page loaded')
     return render_template('index.html')
 
 
@@ -86,6 +89,10 @@ def prediction():
     print("Unscaled Latest Data:")
     print(unscaled_latest_data)
 
+    # show the plot
+    fig = px.line(stock_data, x='Date', y='Close', title='Apple Stock Price')
+    fig.update_xaxes(rangeslider_visible=True)
+
     return render_template('prediction.html',
                             date=latest_data['Date'],
                             close=round(latest_data['Close'], 2),
@@ -94,7 +101,8 @@ def prediction():
                             open=round(unscaled_latest_data['Open'], 2),
                             high=round(unscaled_latest_data['High'], 2),
                             low=round(unscaled_latest_data['Low'], 2),
-                            predicted_price=round(predicted_price, 2)
+                            predicted_price=round(predicted_price, 2),
+                            fig=fig.to_html(full_html=False, default_height=500, default_width=700)                       
                           )
 
 def unscale_data(data_df, scaler, numerical_features):
