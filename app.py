@@ -52,7 +52,7 @@ def prediction():
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
     X_lstm = X_lstm.astype('float32')
-    print("X_lstm: ", X_lstm)
+    print("X_lstm: ", X_lstm) # returns features just for that day
 
     # Predict the price for today
     predicted_scaled = loaded_model.predict(X_lstm)
