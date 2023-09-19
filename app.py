@@ -4,6 +4,7 @@ from keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 import plotly.express as px
+from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -43,32 +44,27 @@ def prediction():
 
     # Get the latest data (today's data) from the processed data
     latest_data = stock_data.iloc[-1]
-    print(latest_data)
+    print("date:" , latest_data['Date'])
 
     # Extract the features needed for prediction
     features = latest_data.drop(['Close', 'Date', 'Quarter']).values
 
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
-
-    # avoid this error: Failed to convert a NumPy array to a Tensor (Unsupported object type numpy.float64).
-
     X_lstm = X_lstm.astype('float32')
+    print("X_lstm: ", X_lstm)
 
-    # Predict the price for tomorrow
+    # Predict the price for today
     predicted_scaled = loaded_model.predict(X_lstm)
-    print("predicted scaled: ", predicted_scaled)
-    
+
     # Inverse transform to get the actual predicted price
     scaler = StandardScaler()
     scaler.fit(stock_data['Close'].values.reshape(-1, 1))
     inverse = scaler.inverse_transform(predicted_scaled)
     predicted_price = inverse[0][0]
 
-    print("predicted price: ", predicted_price)
-    print(type(predicted_price))
-    print("shape of predicted price: ", predicted_price.shape)
 
+    print("predicted price for the date: ", predicted_price, "type: ", type(predicted_price))
 
     # now, we can do the same for the other features
     # Define the numerical features to unscale
@@ -76,7 +72,7 @@ def prediction():
                           '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
                           'Volatility', 'EMA_Close_5', 'EMA_Close_20']
     
-    # Get the latest data (today's data) from the processed data
+    # Get the latest data (most previous close data) from the processed data
     latest_data = stock_data.iloc[-1].copy()
 
     # Convert the latest data to a DataFrame
@@ -86,7 +82,7 @@ def prediction():
     unscaled_data = unscale_data(latest_data_df.copy(), mm_scaler, numerical_features)
     unscaled_latest_data = unscaled_data.iloc[0]
 
-    print("Unscaled Latest Data:")
+    print("UNSCALED LATEST DATA:")
     print(unscaled_latest_data)
 
     # show the plot
@@ -109,10 +105,11 @@ def unscale_data(data_df, scaler, numerical_features):
     """
     Unscale the numerical features of the data_df using the scaler object
     """
-    # Unscale the numerical features
     data_df[numerical_features] = scaler.inverse_transform(data_df[numerical_features])
 
     return data_df
+
+
                          
 if __name__ == '__main__':
     app.run(debug=True)
