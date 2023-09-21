@@ -55,13 +55,12 @@ def prediction():
     print("X_lstm: ", X_lstm) # returns features just for that day
 
     # Predict the price for today
-    predicted_scaled = loaded_model.predict(X_lstm)
+    predicted_scaled = loaded_model.predict(X_lstm)[0][0]
 
     # Inverse transform to get the actual predicted price
     scaler = StandardScaler()
     scaler.fit(stock_data['Close'].values.reshape(-1, 1))
-    inverse = scaler.inverse_transform(predicted_scaled)
-    predicted_price = inverse[0][0]
+    predicted_price = scaler.inverse_transform([[predicted_scaled]])[0][0]
 
 
     print("predicted price for the date: ", predicted_price, "type: ", type(predicted_price))

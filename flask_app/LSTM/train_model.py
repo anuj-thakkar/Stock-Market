@@ -36,7 +36,8 @@ def prepare_lstm_input(X):
 
 def build_lstm_model(input_shape):
     model = Sequential()
-    model.add(LSTM(50, input_shape=input_shape, activation='tanh', return_sequences=True))
+    # must set return_sequence to False for last LSTM layer
+    model.add(LSTM(50, input_shape=input_shape, activation='tanh', return_sequences=False))
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
