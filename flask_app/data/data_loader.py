@@ -105,7 +105,8 @@ if __name__ == "__main__":
 
     """ we want to predict the closing price of the stock for the next 5 days.
         Simulate future data for the next 5 business days and append it to the existing dataset.
-    
+    """ 
+
     # Calculate the next 5 business days
     next_5_days = pd.bdate_range(end_date, periods=5, freq='C')
 
@@ -114,7 +115,6 @@ if __name__ == "__main__":
 
     # Append the future dates DataFrame to the existing dataset
     apple_df = pd.concat([apple_df, future_dates_df], ignore_index=True)
-    """ 
     # Feature engineering
     apple_df = generate_features(apple_df)
 
@@ -125,8 +125,8 @@ if __name__ == "__main__":
     print(apple_df.tail())
 
     # Scale numerical features
-    # apple_df = scale_data(apple_df, numerical_features)
+    apple_df = scale_data(apple_df, numerical_features)
 
     # Save the processed and feature engineered data to a new CSV file
-    # save_data(apple_df, output_file)
+    save_data(apple_df, output_file)
 

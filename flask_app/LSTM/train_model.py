@@ -36,8 +36,8 @@ def prepare_lstm_input(X):
 
 def build_lstm_model(input_shape):
     model = Sequential()
-    model.add(LSTM(50, input_shape=input_shape, activation='relu'))
-    model.add(Dense(1))
+    model.add(LSTM(50, input_shape=input_shape, activation='tanh', return_sequences=True))
+    model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
@@ -62,6 +62,11 @@ if __name__ == "__main__":
 
     model = build_lstm_model(input_shape=(X_train.shape[1], X_train.shape[2]))
     history = train_lstm_model(model, X_train, y_train, epochs=epochs, batch_size=batch_size)
+    print_model_summary(model)
+
+    # print model accuracy
+    train_score = model.evaluate(X_train, y_train, verbose=0)
+    print('Train Score: %.2f MSE (%.2f RMSE)' % (train_score, np.sqrt(train_score)))
 
     # Save the trained model
     model.save('trained_lstm_model.h5')
