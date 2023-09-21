@@ -42,12 +42,15 @@ def prediction():
                           '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
                           'Volatility', 'EMA_Close_5', 'EMA_Close_20']
 
-    # Get the latest data (today's data) from the processed data
-    latest_data = stock_data.iloc[-1]
-    print("date:" , latest_data['Date'])
+    # Get today's date in the format used in your DataFrame (e.g., 'YYYY-MM-DD')
+    today_date = pd.to_datetime('today').strftime('%Y-%m-%d')
+
+    # Filter the stock_data DataFrame to get the data for today's date
+    today_data = stock_data[stock_data['Date'] == today_date].iloc[0]
+    print("today's date:" , today_data['Date'])
 
     # Extract the features needed for prediction
-    features = latest_data.drop(['Close', 'Date', 'Quarter']).values
+    features = today_data.drop(['Close', 'Date', 'Quarter']).values
 
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
@@ -89,8 +92,8 @@ def prediction():
     fig.update_xaxes(rangeslider_visible=True)
 
     return render_template('prediction.html',
-                            date=latest_data['Date'],
-                            close=round(latest_data['Close'], 2),
+                            date=today_data['Date'],
+                            close=round(today_data['Close'], 2),
                             # round Volume to whole number
                             volume = round(unscaled_latest_data['Volume']), 
                             open=round(unscaled_latest_data['Open'], 2),
