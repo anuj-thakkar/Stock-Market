@@ -27,7 +27,7 @@ This project is a simple web application that predicts the next day's closing st
 
 1. Clone the repository:
    ```sh
-   git clone https://github.com/anujthakkar2001/Stock-Market
+   git clone https://github.com/anuj-thakkar/Stock-Market
    cd stock-prediction-app
    
 ## Usage
