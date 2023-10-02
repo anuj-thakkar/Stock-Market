@@ -48,14 +48,14 @@ def prediction():
     # Filter the stock_data DataFrame to get the data for today's date
     today_data = stock_data[stock_data['Date'] == today_date].iloc[0]
     print("today's date:" , today_data['Date'])
-
+    print("today's data: ", today_data)
     # Extract the features needed for prediction
     features = today_data.drop(['Close', 'Date', 'Quarter']).values
 
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
     X_lstm = X_lstm.astype('float32')
-    print("X_lstm: ", X_lstm) # returns features just for that day
+    print("X_lstm: ", X_lstm) # returns features just for that day (TODAY)
 
     # Predict the price for today
     predicted_scaled = loaded_model.predict(X_lstm)[0][0]
@@ -108,7 +108,6 @@ def unscale_data(data_df, scaler, numerical_features):
     Unscale the numerical features of the data_df using the scaler object
     """
     data_df[numerical_features] = scaler.inverse_transform(data_df[numerical_features])
-
     return data_df
 
 
