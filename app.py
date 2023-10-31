@@ -4,7 +4,6 @@ from keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 import plotly.express as px
-from datetime import datetime, timedelta
 
 
 app = Flask(__name__)
@@ -42,31 +41,34 @@ def prediction():
                           '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
                           'Volatility', 'EMA_Close_5', 'EMA_Close_20']
 
-    # Get today's date in the format used in your DataFrame (e.g., 'YYYY-MM-DD')
-    today_date = pd.to_datetime('today').strftime('%Y-%m-%d')
+    # Get the latest data (today's data) from the processed data
+    latest_data = stock_data.iloc[-1]
+    print(latest_data)
 
-    # Filter the stock_data DataFrame to get the data for today's date
-    today_data = stock_data[stock_data['Date'] == today_date].iloc[0]
-    print("today's date:" , today_data['Date'])
-    print("today's data: ", today_data)
     # Extract the features needed for prediction
-    features = today_data.drop(['Close', 'Date', 'Quarter']).values
+    features = latest_data.drop(['Close', 'Date', 'Quarter']).values
 
     # Reshape features for LSTM input
     X_lstm = features.reshape(1, 1, len(features))
+
+    # avoid this error: Failed to convert a NumPy array to a Tensor (Unsupported object type numpy.float64).
+
     X_lstm = X_lstm.astype('float32')
-    print("X_lstm: ", X_lstm) # returns features just for that day (TODAY)
 
-    # Predict the price for today
-    predicted_scaled = loaded_model.predict(X_lstm)[0][0]
-
+    # Predict the price for tomorrow
+    predicted_scaled = loaded_model.predict(X_lstm)
+    print("predicted scaled: ", predicted_scaled)
+    
     # Inverse transform to get the actual predicted price
     scaler = StandardScaler()
     scaler.fit(stock_data['Close'].values.reshape(-1, 1))
-    predicted_price = scaler.inverse_transform([[predicted_scaled]])[0][0]
+    inverse = scaler.inverse_transform(predicted_scaled)
+    predicted_price = inverse[0][0]
 
+    print("predicted price: ", predicted_price)
+    print(type(predicted_price))
+    print("shape of predicted price: ", predicted_price.shape)
 
-    print("predicted price for the date: ", predicted_price, "type: ", type(predicted_price))
 
     # now, we can do the same for the other features
     # Define the numerical features to unscale
@@ -74,7 +76,7 @@ def prediction():
                           '5_day_mean_close_price', '5_day_mean_volume', 'Daily_Range',
                           'Volatility', 'EMA_Close_5', 'EMA_Close_20']
     
-    # Get the latest data (most previous close data) from the processed data
+    # Get the latest data (today's data) from the processed data
     latest_data = stock_data.iloc[-1].copy()
 
     # Convert the latest data to a DataFrame
@@ -84,7 +86,7 @@ def prediction():
     unscaled_data = unscale_data(latest_data_df.copy(), mm_scaler, numerical_features)
     unscaled_latest_data = unscaled_data.iloc[0]
 
-    print("UNSCALED LATEST DATA:")
+    print("Unscaled Latest Data:")
     print(unscaled_latest_data)
 
     # show the plot
@@ -92,8 +94,8 @@ def prediction():
     fig.update_xaxes(rangeslider_visible=True)
 
     return render_template('prediction.html',
-                            date=today_data['Date'],
-                            close=round(today_data['Close'], 2),
+                            date=latest_data['Date'],
+                            close=round(latest_data['Close'], 2),
                             # round Volume to whole number
                             volume = round(unscaled_latest_data['Volume']), 
                             open=round(unscaled_latest_data['Open'], 2),
@@ -107,10 +109,10 @@ def unscale_data(data_df, scaler, numerical_features):
     """
     Unscale the numerical features of the data_df using the scaler object
     """
+    # Unscale the numerical features
     data_df[numerical_features] = scaler.inverse_transform(data_df[numerical_features])
+
     return data_df
-
-
                          
 if __name__ == '__main__':
     app.run(debug=True)
