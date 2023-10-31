@@ -35,9 +35,10 @@ def prepare_lstm_input(X):
     return X_lstm
 
 def build_lstm_model(input_shape):
+    from keras.layers import Dropout
     model = Sequential()
-    # must set return_sequence to False for last LSTM layer
     model.add(LSTM(50, input_shape=input_shape, activation='tanh', return_sequences=False))
+    model.add(Dropout(0.2))  # Adjust the dropout rate as needed
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mean_squared_error', optimizer='adam')
     return model
@@ -60,6 +61,8 @@ if __name__ == "__main__":
     X_lstm = prepare_lstm_input(X)
     
     X_train, X_test, y_train, y_test = train_test_split(X_lstm, y_scaled, test_size=0.2, shuffle=False)
+    print('X_train shape: ', X_train.shape)
+    print('y_train shape: ', y_train.shape)
 
     model = build_lstm_model(input_shape=(X_train.shape[1], X_train.shape[2]))
     history = train_lstm_model(model, X_train, y_train, epochs=epochs, batch_size=batch_size)
@@ -67,7 +70,21 @@ if __name__ == "__main__":
 
     # print model accuracy
     train_score = model.evaluate(X_train, y_train, verbose=0)
+    print('\n')
     print('Train Score: %.2f MSE (%.2f RMSE)' % (train_score, np.sqrt(train_score)))
+    print('\n')
+
+
+    from sklearn.metrics import mean_squared_error, mean_absolute_error
+    import numpy as np
+
+    y_pred = model.predict(X_test)
+    test_mse = mean_squared_error(y_test, y_pred)
+    test_rmse = np.sqrt(test_mse)
+    print('\n')
+    print('Test MSE: %.2f' % test_mse)
+    print('Test RMSE: %.2f' % test_rmse)
+
 
     # Save the trained model
     model.save('trained_lstm_model.h5')
